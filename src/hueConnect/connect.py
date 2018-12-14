@@ -25,5 +25,8 @@ def check_connection(test = False):
     except request.URLError as exc:
         print ("Raised: {} - couldn't resolve \"{}\"".format(exc, hueDiscoveryURL))
 
+# overrides the default param value to run in test mode
+# execute as script to use this
+
 if __name__ == "__main__":
     check_connection(True)
