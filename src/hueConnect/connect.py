@@ -1,6 +1,9 @@
 from urllib import request
 import json
 
+import tkinter as tk
+from tkinter import messagebox
+
 # Interfacing with the Philips Hue portal service in order to
 # ascertain the local IP address of the Hue Bridge if one is present and 'alive'
 
@@ -22,8 +25,8 @@ def check_connection(test = False):
             print("DECODED JSON DATA: {}\n".format(responseData))
             print("Bridge ID: {}".format(responseData["id"]))
             print("Bridge local IP: {}".format(responseData["internalipaddress"]))
-    except request.URLError as exc:
-        print ("Raised: {} - couldn't resolve \"{}\"".format(exc, hueDiscoveryURL))
+    except (request.URLError, ValueError) as exc:
+        messagebox.showerror("Search error!", ("Raised: {}\n\nPortal URL \"{}\"".format(exc, hueDiscoveryURL)))
 
 # overrides the default param value to run in test mode
 # execute as script to use this

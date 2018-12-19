@@ -21,11 +21,13 @@ class MainApplication:
         # dict styles for reference
         self.styles = {
             "bg": "#171515", # background color
-            "font": "Helvetica 14" # main font used throughout the application
+            "bg-light": "#322D2D", # lighter variant of the background
+            "font": "Helvetica 14", # main font used throughout the application
+            "font-c": "Helvetica " # font without size specification
         }
 
         self.root.protocol("WM_DELETE_WINDOW", self.exit_callback)
-        self.root.configure(background=self.styles["bg"])
+        self.root.configure(background = self.styles["bg"])
 
         # checks if the the settings file exists
         if HS.check_new_user(HS.getCWD()):
