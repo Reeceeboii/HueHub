@@ -17,7 +17,7 @@ def check_new_user(filePath = getCWD()):
     os.chdir("..")
     os.chdir("resources/user-settings/")
     check = os.path.exists("settings.json")
-    os.chdir("../../src/hubSettings") # return the working directory
+    os.chdir("../../src/hubSettings") # return to the original working directory
     return check
 
 def create_new_user(styles, mainRoot):
@@ -28,14 +28,14 @@ def create_new_user(styles, mainRoot):
 # setup process
 class SettingsExistingUser:
     def __init__(self):
-        pass
-        #json data from file
+        os.chdir("../../resources/user-settings") # changing directory to the settings file's location
 
+        self.user_name = ""
+        self.bridge_ip = ""
+        self.bridge_id = ""
 
-
-    # getters
-    # setters
-
-# Test mode if run as standalone
-if __name__ == "__main__":
-    print("Settings file exists: {}".format(check_new_user()))
+        with open("settings.json", "r") as settings_file_obj:
+            settings = json.loads(settings_file_obj.read())
+            self.user_name = settings["User"]
+            self.bridge_ip = settings["Bridge IP"]
+            self.bridge_id = settings["Bridge ID"]

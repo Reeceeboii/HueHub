@@ -1,3 +1,8 @@
+# module for the GUI window shown to new users who first boot the program and have
+# not already been through the setup process of linking a Hue Bridge and giving some
+# basic information.
+
+
 import tkinter as tk
 from tkinter import messagebox
 from hueConnect import connect as HC
@@ -18,11 +23,15 @@ class NewUserSettings:
         self.root.minsize(400, 350)
         self.root.maxsize(1920, 1080)
         self.root.geometry("750x600")
-        self.root.protocol("WM_DELETE_WINDOW", self.exit_callback(mainRoot))
+        self.root.protocol("WM_DELETE_WINDOW", lambda: self.exit_callback(mainRoot))
         self.root.configure(bg = styles["bg"])
 
-        self.bridge = ""
+        os.chdir("../../resources/icons")
+        self.root.iconbitmap(r"bulb.ico")
+        os.chdir("../../src/hubSettings/")
 
+        self.bridge = ""
+        self.apiToken = ""
 
         self.welcomeLabel = tk.Label(self.root, text = "HueHub", font = styles["font-c"] + "25", bg = styles["bg"],
                                      fg = "white")
@@ -35,6 +44,7 @@ class NewUserSettings:
         self.searchButton = tk.Button(self.root, text = "Search!", font = styles["font"], command = lambda: self.find_bridge())
         self.searchButton.pack(pady = 20)
 
+        # the following widgets are pack_forget()'d so they don't display initially but have still been defined
         self.nameLabel = tk.Label(self.root, text = "Please enter your first name", font = styles["font-c"] + "12", bg = styles["bg"],
                                   fg = "white")
         self.nameLabel.pack_forget()
@@ -54,12 +64,17 @@ class NewUserSettings:
             # do stuff
         else:
             # message box with bridge IP and user choice of connection
-            if messagebox.askyesno("Bridge found!", "A Hue Bridge has been found at {}\nWould you like to connect?".format(self.bridge[1]),
+            if messagebox.askyesno("Bridge found!", ("A Hue Bridge has been found at {}\nWould you like to connect?\n\n"
+            "If yes, please press the button on your Hue Bridge before continuing.").format(self.bridge[1]),
             parent = self.root):
-                # display rest of user setup
-                self.nameLabel.pack(pady = 5)
-                self.nameEntry.pack(pady = 5)
-                self.start_button.pack(pady = 5)
+
+                token = HC.get_new_api_token(self.bridge[1])
+                if token[0]:
+                    # display rest of user setup
+                    self.nameLabel.pack(pady = 5)
+                    self.nameEntry.pack(pady = 5)
+                    self.start_button.pack(pady = 5)
+                    self.apiToken = token[1]
 
 
     def finished(self, mainRoot):
@@ -71,7 +86,8 @@ class NewUserSettings:
                 settings = {
                 "Bridge ID": self.bridge[0],
                 "Bridge IP": self.bridge[1],
-                "User": self.nameEntry.get().strip().capitalize()
+                "User": self.nameEntry.get().strip().capitalize(),
+                "Token": self.apiToken
                 }
                 settings_file_obj.write(json.dumps(settings))
 
