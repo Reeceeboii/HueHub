@@ -1,6 +1,8 @@
-from urllib import request
+# This module houses the networking backend of the client program. All polls to the portal and API
+# requests/auth attempts are contained here
+
 import json
-import requests # http request module
+import requests
 
 import tkinter as tk
 from tkinter import messagebox
@@ -11,9 +13,8 @@ from tkinter import messagebox
 def check_connection(test = False):
     hueDiscoveryURL = "https://discovery.meethue.com/"
     try:
-        hueResponse = request.urlopen(hueDiscoveryURL)
-        responseData = hueResponse.read()
-        responseData = responseData.decode("utf-8")
+        hueResponse = requests.get(hueDiscoveryURL)
+        responseData = hueResponse.text
         responseData = "".join([x for x in responseData if x not in ["[","]"]])
         responseData = json.loads(responseData)
 
@@ -26,10 +27,11 @@ def check_connection(test = False):
             print("DECODED JSON DATA: {}\n".format(responseData))
             print("Bridge ID: {}".format(responseData["id"]))
             print("Bridge local IP: {}".format(responseData["internalipaddress"]))
-    except (request.URLError, ValueError) as exc:
+    except requests.exceptions.RequestException as exc:
         messagebox.showerror("Search error!", ("Raised: {}\n\nPortal URL \"{}\"".format(exc, hueDiscoveryURL)))
 
 
+# autenticates with the bridge and receives api access tokens
 def get_new_api_token(bridgeIP):
     reqDest = "http://" + bridgeIP + "/api"
     payload = "{\"devicetype\"" + ": " + "\"hue_hub#Reece PC\"}"
@@ -38,15 +40,38 @@ def get_new_api_token(bridgeIP):
     response = "".join([x for x in r.text if x not in ["[","]"]])
     response = json.loads(response)
 
-    messagebox.showinfo("HUE API Connection was a success!","TO: {}\n\nCODE: {}\n\nREPONSE: {}".format(reqDest, r, response))
-    print(r.text)
+    # Uncomment these lines if some debugging is needed
+    # messagebox.showinfo("HUE API Connection was a success!","TO: {}\n\nCODE: {}\n\nREPONSE: {}".format(reqDest, r, response))
+    # print(r.text)
 
-    if "error" in response:
+    if "error" in response: # if an error response is received
         if response["error"]["type"] == 101:
-            messagebox.showerror("Try again!","Please press the button on your Hue Bridge!")
+            messagebox.showerror("That didn't quite work!","Please press the button on your Hue Bridge!")
             return (False, None)
 
     return (True, response["success"]["username"])
+
+
+# returns large amount of data from the bridge - a simple get request on the user's access token
+def user_information(apiAccessDetails):
+    user = requests.get("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1])
+    return json.loads(user.text)
+
+# GUI popup with connection status information
+def connection_status(apiAccessDetails):
+    bridgeJSONDump = user_information(apiAccessDetails)
+
+    info = ("Hue Bridge IP: {}\n".format(bridgeJSONDump["config"]["ipaddress"]),
+            "Hue Bridge MAC Address: {}\n".format(bridgeJSONDump["config"]["mac"]),
+            "Link button pressed in the last 30 seconds: {}\n".format(bridgeJSONDump["config"]["linkbutton"]),
+            "Current number of API whitelists: {}\n".format(len([key for key in bridgeJSONDump["config"]["whitelist"]]))
+            )
+
+    messagebox.showinfo("Bridge: '{}'".format(bridgeJSONDump["config"]["name"]), "".join([x for x in info]))
+
+def lights(apiAccessDetails):
+    userLights = requests.get("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights")
+    parsed = json.loads(userLights.text)
 
 
 

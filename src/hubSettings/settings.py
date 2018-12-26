@@ -30,12 +30,14 @@ class SettingsExistingUser:
     def __init__(self):
         os.chdir("../../resources/user-settings") # changing directory to the settings file's location
 
-        self.user_name = ""
-        self.bridge_ip = ""
-        self.bridge_id = ""
+        self.username = ""
+        self.bridgeIP = ""
+        self.bridgeID = ""
+        self.apiToken = ""
 
-        with open("settings.json", "r") as settings_file_obj:
-            settings = json.loads(settings_file_obj.read())
-            self.user_name = settings["User"]
-            self.bridge_ip = settings["Bridge IP"]
-            self.bridge_id = settings["Bridge ID"]
+        with open("settings.json", "r") as settingsFileObj:
+            settings = json.loads(settingsFileObj.read())
+            self.username = settings["User"]
+            self.bridgeIP = settings["Bridge IP"]
+            self.bridgeID = settings["Bridge ID"]
+            self.apiToken = settings["Token"]

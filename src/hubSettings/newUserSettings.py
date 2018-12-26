@@ -1,4 +1,4 @@
-# module for the GUI window shown to new users who first boot the program and have
+# Module for the GUI window shown to new users who first boot the program and have
 # not already been through the setup process of linking a Hue Bridge and giving some
 # basic information.
 
@@ -26,6 +26,7 @@ class NewUserSettings:
         self.root.protocol("WM_DELETE_WINDOW", lambda: self.exit_callback(mainRoot))
         self.root.configure(bg = styles["bg"])
 
+        # Applying window icon file
         os.chdir("../../resources/icons")
         self.root.iconbitmap(r"bulb.ico")
         os.chdir("../../src/hubSettings/")
@@ -61,12 +62,14 @@ class NewUserSettings:
         self.bridge = HC.check_connection()
         if self.bridge == None:
             print ("fail")
-            # do stuff
+            # TODO
+            # add some suitable error messages if a bridge cannot be found. Need to test this by hard coding an empty JSON response
+            # from the hue portal - the scenario which would cause the control flow to enter this block
+
         else:
             # message box with bridge IP and user choice of connection
-            if messagebox.askyesno("Bridge found!", ("A Hue Bridge has been found at {}\nWould you like to connect?\n\n"
-            "If yes, please press the button on your Hue Bridge before continuing.").format(self.bridge[1]),
-            parent = self.root):
+            if messagebox.askyesno("Bridge found!", ("A Hue Bridge has been found. Would you like to connect?\n\n"
+            "If yes, please press the button on your Hue Bridge before continuing."), parent = self.root):
 
                 token = HC.get_new_api_token(self.bridge[1])
                 if token[0]:
