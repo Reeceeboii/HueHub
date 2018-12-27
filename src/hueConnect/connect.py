@@ -57,6 +57,7 @@ def user_information(apiAccessDetails):
     user = requests.get("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1])
     return json.loads(user.text)
 
+
 # GUI popup with connection status information
 def connection_status(apiAccessDetails):
     bridgeJSONDump = user_information(apiAccessDetails)
@@ -64,14 +65,33 @@ def connection_status(apiAccessDetails):
     info = ("Hue Bridge IP: {}\n".format(bridgeJSONDump["config"]["ipaddress"]),
             "Hue Bridge MAC Address: {}\n".format(bridgeJSONDump["config"]["mac"]),
             "Link button pressed in the last 30 seconds: {}\n".format(bridgeJSONDump["config"]["linkbutton"]),
-            "Current number of API whitelists: {}\n".format(len([key for key in bridgeJSONDump["config"]["whitelist"]]))
-            )
-
+            "Current number of API whitelists: {}\n".format(len([key for key in bridgeJSONDump["config"]["whitelist"]])),
+            "Your API token: {}".format(apiAccessDetails[1]))
+            
     messagebox.showinfo("Bridge: '{}'".format(bridgeJSONDump["config"]["name"]), "".join([x for x in info]))
 
+# Returns parsed JSON object that contains lights
 def lights(apiAccessDetails):
     userLights = requests.get("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights")
-    parsed = json.loads(userLights.text)
+    print(userLights.text)
+    return json.loads(userLights.text)
+
+
+
+# Returns True if a light is on, False if not
+def get_light_on_off_state(light, apiAccessDetails):
+    lightStatus = requests.get("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights")
+    return json.loads(lightStatus.text)[light]["state"]["on"]
+
+
+# Changes a light's state to the opposite of its current state
+def set_on_off(light, apiAccessDetails):
+    if get_light_on_off_state(light, apiAccessDetails):
+        payload = "{\"on\":false}"
+    else:
+        payload = "{\"on\":true}"
+
+    requests.put("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights/" + light + "/state", data = payload)
 
 
 
