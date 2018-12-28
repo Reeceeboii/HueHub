@@ -7,6 +7,9 @@ from tkinter import messagebox
 
 import os
 
+from PIL import ImageTk, Image
+
+
 
 # Main application GUI class
 class MainApplication:
@@ -108,6 +111,25 @@ class MainApplication:
             self.LightOnOffButton = tk.Button(self.lightFrame, text = self.OnOffButton, command = lambda: [HC.set_on_off(self.lightChoice.get(),
                                               self.apiAccessDetails), self.update_light_frame()], font = self.styles["font-c"] + "10")
             self.LightOnOffButton.grid(row = 2)
+
+            self.brightnessSlider = tk.Scale(self.lightFrame, from_ = 0, to = 100, orient = "horizontal",
+                                             background = self.styles["bg-light"], activebackground = self.styles["bg-light"],
+                                             bd = 0, fg = "white", font = self.styles["font-c"] + "10", width = 40,
+                                             command = lambda _: HC.set_light_brightness(self.lightChoice.get(),
+                                                                 self.apiAccessDetails, self.brightnessSlider.get()))
+            self.brightnessSlider.grid(row = 3, pady = 250)
+            self.brightnessSlider.set(HC.get_light_brightness(self.lightChoice.get(), self.apiAccessDetails))
+
+            '''
+            os.chdir("../images")
+            self.lightImage = Image.open ("light_off2.png")
+            print(self.lightImage.mode)
+            self.lightImage = ImageTk.PhotoImage (self.lightImage)
+            self.imagePlaceholder = tk.Label (self.lightFrame, image = self.lightImage, relief = "solid")
+            self.imagePlaceholder.photo = self.lightImage
+            self.imagePlaceholder.grid(row = 0, column = 1)
+            '''
+
 
 
 

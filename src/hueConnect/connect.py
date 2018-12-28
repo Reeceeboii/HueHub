@@ -67,13 +67,12 @@ def connection_status(apiAccessDetails):
             "Link button pressed in the last 30 seconds: {}\n".format(bridgeJSONDump["config"]["linkbutton"]),
             "Current number of API whitelists: {}\n".format(len([key for key in bridgeJSONDump["config"]["whitelist"]])),
             "Your API token: {}".format(apiAccessDetails[1]))
-            
+
     messagebox.showinfo("Bridge: '{}'".format(bridgeJSONDump["config"]["name"]), "".join([x for x in info]))
 
 # Returns parsed JSON object that contains lights
 def lights(apiAccessDetails):
     userLights = requests.get("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights")
-    print(userLights.text)
     return json.loads(userLights.text)
 
 
@@ -82,6 +81,18 @@ def lights(apiAccessDetails):
 def get_light_on_off_state(light, apiAccessDetails):
     lightStatus = requests.get("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights")
     return json.loads(lightStatus.text)[light]["state"]["on"]
+
+# Gets the current brightness of a light (out of 256), and returns the value out of 100
+def get_light_brightness(light, apiAccessDetails):
+    lightBrightness = requests.get("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights")
+    lightBrightness = json.loads(lightBrightness.text)[light]["state"]["bri"]
+    return int(lightBrightness / 254 * 100)
+
+
+def set_light_brightness(light, apiAccessDetails, newBrightness):
+    payload = "{\"bri\":" + str(int(newBrightness * 254 / 100)) + "}"
+    requests.put("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights/" + light + "/state", data = payload)
+
 
 
 # Changes a light's state to the opposite of its current state
