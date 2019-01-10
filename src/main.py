@@ -17,7 +17,7 @@ class MainApplication:
         self.root = root
         self.root.title("HueHub")
         self.root.minsize(400, 350)
-        self.root.maxsize(1920, 1080)
+        self.root.maxsize(400, 350)
         self.root.geometry("750x600")
 
         # Dict styles for reference
@@ -68,7 +68,7 @@ class MainApplication:
             self.welcomeMessage = "Welcome back, {}.".format(self.userSettings.username)
             self.welcomeLabel = tk.Label(self.root, text = self.welcomeMessage, bg = self.styles["bg"], font = self.styles["font-c"] + "22",
                                          fg = "white")
-            self.welcomeLabel.grid(row = 0, pady = 5, padx = 5, sticky = "w")
+            self.welcomeLabel.grid(row = 0, pady = 5, padx = 5, sticky = "n")
 
             self.lightCount = len(self.lightsArray)
             if self.lightCount > 1:
@@ -77,25 +77,34 @@ class MainApplication:
                 self.lightsMessage = "You have 1 light connected and online."
             self.lightsLabel = tk.Label(self.root, text = self.lightsMessage, bg = self.styles["bg"], font = self.styles["font-c"] + "17",
                                         fg = "white")
-            self.lightsLabel.grid(row = 1, pady = 5, padx = 5, sticky = "w")
+            self.lightsLabel.grid(row = 1, pady = 5, padx = 5, sticky = "n")
 
             self.choiceLabel = tk.Label(self.root, text = "Choose which light to interact with", bg = self.styles["bg"],
                                         font = self.styles["font-c"] + "9", fg = "white")
-            self.choiceLabel.grid(row = 2, pady = 5, padx = 5, sticky = "w")
+            self.choiceLabel.grid(row = 2, pady = 5, padx = 5, sticky = "n")
 
 
             self.lightChoice = ttk.Combobox (self.root, width = 50, height = 30, font = self.styles["font-c"] + "10",
                                              state = "readonly", values = (self.lightsArray))
-            self.lightChoice.grid(row = 4, padx = 5, sticky = "nw")
+            self.lightChoice.grid(row = 4, padx = 5, sticky = "n")
             self.lightChoice.set(self.lightsArray[0])
 
-            self.lightFrame = tk.Frame(self.root, width = 330, height = 450, background = self.styles["bg-light"],
+            self.lightFrame = tk.Frame(self.root, width = 330, height = 180, background = self.styles["bg-light"],
                                        relief = "ridge", bd = 1)
-            self.lightFrame.grid(row = 4, column = 2)
+            self.lightFrame.grid(row = 6, column = 0, pady = 10)
             self.lightFrame.grid_propagate(False)
 
             # TODO - at some point - set the dropdown menu options strings to be equivalent to the light's actual
             # name returned from the JSON bridge dump
+
+            os.chdir("../icons")
+            self.onImage = "switch_on.png"
+            self.switchOn = tk.PhotoImage(file = self.onImage)
+            self.offImage = "switch_off.png"
+            self.switchOff = tk.PhotoImage(file = self.offImage)
+
+
+
 
             if HC.get_light_on_off_state(self.lightChoice.get(), self.apiAccessDetails):
                 self.NameAndState = "Light {} is on".format(self.lightChoice.get())
@@ -106,19 +115,23 @@ class MainApplication:
 
             self.lightNameAndState = tk.Label(self.lightFrame, text = self.NameAndState, font = self.styles["font-c"] + "15",
                                               bg = self.styles["bg-light"], fg = "white")
-            self.lightNameAndState.grid(row = 0, sticky = "n")
+            self.lightNameAndState.grid(row = 0, column = 0, sticky = "w")
 
-            self.LightOnOffButton = tk.Button(self.lightFrame, text = self.OnOffButton, command = lambda: [HC.set_on_off(self.lightChoice.get(),
-                                              self.apiAccessDetails), self.update_light_frame()], font = self.styles["font-c"] + "10")
+            self.LightOnOffButton = tk.Button(self.lightFrame, image = self.switchOn,
+                                              command = lambda: [HC.set_on_off(self.lightChoice.get(),
+                                              self.apiAccessDetails, self.brightnessSlider.get()), self.update_light_frame()],
+                                              width = 100, height = 100)
             self.LightOnOffButton.grid(row = 2)
 
             self.brightnessSlider = tk.Scale(self.lightFrame, from_ = 0, to = 100, orient = "horizontal",
                                              background = self.styles["bg-light"], activebackground = self.styles["bg-light"],
-                                             bd = 0, fg = "white", font = self.styles["font-c"] + "10", width = 40,
+                                             bd = 0, fg = "white", font = self.styles["font-c"] + "10", width = 40, highlightthickness = 0,
+                                             label = "Brightness",
                                              command = lambda _: HC.set_light_brightness(self.lightChoice.get(),
                                                                  self.apiAccessDetails, self.brightnessSlider.get()))
-            self.brightnessSlider.grid(row = 3, pady = 250)
+            self.brightnessSlider.grid(row = 2, column = 1, padx = 60)
             self.brightnessSlider.set(HC.get_light_brightness(self.lightChoice.get(), self.apiAccessDetails))
+
 
             '''
             os.chdir("../images")
@@ -136,10 +149,10 @@ class MainApplication:
     def update_light_frame(self):
         if HC.get_light_on_off_state(self.lightChoice.get(), self.apiAccessDetails):
             self.lightNameAndState.config(text = "Light {} is on".format(self.lightChoice.get()))
-            self.LightOnOffButton.config(text = "Turn off")
+            self.LightOnOffButton.config(image = self.switchOn)
         else:
             self.lightNameAndState.config(text = "Light {} is off".format(self.lightChoice.get()))
-            self.LightOnOffButton.config(text = "Turn on")
+            self.LightOnOffButton.config(image = self.switchOff)
 
 
     # Sets up the various options contained within the program's menus

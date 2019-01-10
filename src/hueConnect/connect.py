@@ -86,23 +86,33 @@ def get_light_on_off_state(light, apiAccessDetails):
 def get_light_brightness(light, apiAccessDetails):
     lightBrightness = requests.get("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights")
     lightBrightness = json.loads(lightBrightness.text)[light]["state"]["bri"]
-    return int(lightBrightness / 254 * 100)
+    return int(lightBrightness / 256 * 100)
 
 
 def set_light_brightness(light, apiAccessDetails, newBrightness):
-    payload = "{\"bri\":" + str(int(newBrightness * 254 / 100)) + "}"
-    requests.put("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights/" + light + "/state", data = payload)
+    # Small check to only send requests to a light that is actually turned on - no need to
+    # send bombard the bridge with useless requests
 
+    if get_light_on_off_state(light, apiAccessDetails):
+        payload = "{\"bri\":" + str(int(newBrightness * 256 / 100)) + "}"
+        requests.put("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights/" + light + "/state", data = payload)
 
 
 # Changes a light's state to the opposite of its current state
-def set_on_off(light, apiAccessDetails):
+def set_on_off(light, apiAccessDetails, brightness):
     if get_light_on_off_state(light, apiAccessDetails):
+        # If a light is on, PUT request a turn off
         payload = "{\"on\":false}"
     else:
+        # If a light is off, PUT request a turn on
         payload = "{\"on\":true}"
 
     requests.put("http://" + apiAccessDetails[0] + "/api/" + apiAccessDetails[1] + "/lights/" + light + "/state", data = payload)
+
+    # Making sure that the light is up to date with the brightness slider, even if
+    # the slider was changed while the light was off
+    set_light_brightness(light, apiAccessDetails, brightness)
+
 
 
 

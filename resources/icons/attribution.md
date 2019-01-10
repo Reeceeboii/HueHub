@@ -4,5 +4,6 @@ Icons from http://www.flaticon.com/
 
 | Icon | Link |
 | ------ | ------ |
-| 'Checked' | https://www.flaticon.com/free-icon/checked_190411 |
-| 'Idea free icon' | https://www.flaticon.com/free-icon/idea_148819#term=light&page=1&position=3 |
+| 'Idea free icon' | https://www.flaticon.com/free-icon/idea_148819 |
+| 'Switch free icon (on)' | https://www.flaticon.com/free-icon/switch_149034 |
+| 'Switch free icon (off)' | https://www.flaticon.com/free-icon/switch_149033 |
